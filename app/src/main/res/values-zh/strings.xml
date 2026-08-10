@@ -161,6 +161,7 @@
     <string name="font_size_detail">放大或缩小文字。</string>
     <string name="font_size">字体大小</string>
     <string name="source_code">OpenNote项目源代码</string>
+    <string name="opennote_next_source_code">OpenNote-Next项目源代码</string>
     <string name="opennote_derivative_notice">本项目OpenNote-Next是基于OpenNote项目的基础上\n进行开发的二次修改项目</string>
     <string name="shortcut_new_file">新建文件</string>
     <string name="shortcut_import_file">导入文件</string>

@@ -153,6 +153,30 @@ fun AboutPane() {
             headlineContent = { Text(stringResource(R.string.source_code)) }
         )
 
+        Spacer(Modifier.padding(top = 4.dp))
+
+        ListItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(CircleShape)
+                .clickable {
+                    customTabsIntent.launchUrl(
+                        context,
+                        "https://github.com/muxia0396/OpenNote-Next".toUri()
+                    )
+                },
+            colors = ListItemDefaults.colors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+            ),
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Outlined.Commit,
+                    contentDescription = null
+                )
+            },
+            headlineContent = { Text(stringResource(R.string.opennote_next_source_code)) }
+        )
+
         Spacer(Modifier.weight(1f))
 
         Text(

@@ -160,6 +160,7 @@
     <string name="font_size">Yazı tipi boyutu</string>
     <string name="font_size_detail">Metni büyüt veya küçült.</string>
     <string name="source_code">OpenNote kaynak kodu</string>
+    <string name="opennote_next_source_code">OpenNote-Next kaynak kodu</string>
     <string name="opennote_derivative_notice">OpenNote-Next, OpenNote projesi temel alınarak geliştirilmiş ikincil bir projedir.</string>
     <string name="shortcut_new_file">Yeni dosya</string>
     <string name="shortcut_import_file">Dosya içe aktar</string>

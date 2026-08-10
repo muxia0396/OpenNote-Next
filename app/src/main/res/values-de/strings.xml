@@ -161,6 +161,7 @@
     <string name="font_size">Schriftgröße</string>
     <string name="font_size_detail">Text vergrößern oder verkleinern.</string>
     <string name="source_code">OpenNote-Quellcode</string>
+    <string name="opennote_next_source_code">OpenNote-Next-Quellcode</string>
     <string name="opennote_derivative_notice">OpenNote-Next ist ein auf dem OpenNote-Projekt basierendes, weiterentwickeltes Projekt.</string>
     <string name="shortcut_new_file">Neue Datei</string>
     <string name="shortcut_import_file">Datei importieren</string>
