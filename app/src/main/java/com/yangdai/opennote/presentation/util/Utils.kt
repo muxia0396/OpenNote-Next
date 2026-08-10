@@ -1,0 +1,156 @@
+package com.yangdai.opennote.presentation.util
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.icu.text.DateFormat
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.remember
+import androidx.core.net.toFile
+import androidx.documentfile.provider.DocumentFile
+import kotlinx.serialization.Serializable
+import java.io.Reader
+
+fun Intent.isTextMimeType() = type?.startsWith(Constants.MIME_TYPE_TEXT) == true
+
+@Stable
+@Serializable
+data class SharedContent(val fileName: String = "", val content: String = "")
+
+/** Reads large text incrementally to avoid a single oversized read allocation. */
+fun Reader.readTextInChunks(
+    chunkSize: Int = 64 * 1024,
+    maxChars: Int = Int.MAX_VALUE,
+    onChunkRead: (Int) -> Unit = {}
+): String {
+    val buffer = CharArray(chunkSize)
+    val result = StringBuilder(chunkSize)
+    while (true) {
+        val count = read(buffer)
+        if (count < 0) break
+        if (result.length > maxChars - count) {
+            throw IllegalStateException("Text file exceeds the safe import size")
+        }
+        result.append(buffer, 0, count)
+        onChunkRead(count)
+    }
+    return result.toString()
+}
+
+@SuppressLint("Range")
+fun Intent.parseSharedContent(context: Context): SharedContent {
+    return when (action) {
+        Intent.ACTION_SEND -> {
+            SharedContent(
+                fileName = getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(),
+                content = getStringExtra(Intent.EXTRA_TEXT).orEmpty()
+            )
+        }
+
+        Intent.ACTION_VIEW, Intent.ACTION_EDIT -> {
+            var text = ""
+            var fileName = ""
+            if (isTextMimeType()) {
+                try {
+                    data?.let { uri ->
+                        fileName = getFileName(context, uri).toString()
+                        when (uri.scheme) {
+                            "content" -> {
+                                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                                    inputStream.bufferedReader().use { reader ->
+                                        text = reader.readTextInChunks()
+                                    }
+                                }
+                            }
+
+                            "file" -> {
+                                uri.toFile().bufferedReader().use { reader ->
+                                    text = reader.readTextInChunks()
+                                }
+                            }
+
+                            else -> {}
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            SharedContent(fileName, text)
+        }
+
+        else -> SharedContent()
+    }
+}
+
+// 检查目录中是否存在指定名称的文件
+fun hasFileWithName(dir: DocumentFile, fileName: String): Boolean {
+    return dir.listFiles().any { file ->
+        file.name == fileName
+    }
+}
+
+fun getFileName(context: Context, uri: Uri): String? {
+    val docFile = DocumentFile.fromSingleUri(context, uri)
+    return docFile?.name
+}
+
+fun getOrCreateDirectory(
+    context: Context, parentUri: Uri, dirName: String
+): DocumentFile? {
+    // 尝试获取父URI的DocumentFile表示
+    val parent = DocumentFile.fromTreeUri(context, parentUri)
+        ?: return null // 无法获取父目录，返回 null
+
+    return try {
+        // 检查是否存在同名文件或目录
+        parent.findFile(dirName)?.let { existingFile ->
+            if (existingFile.isDirectory) {
+                // 如果已存在同名目录，则直接返回
+                return existingFile
+            }
+        }
+
+        parent.createDirectory(dirName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
+
+fun findAllIndices(text: String, word: String): List<Pair<Int, Int>> {
+    if (word.isBlank()) return emptyList()
+
+    return buildList {
+        var index = text.indexOf(word, ignoreCase = true)
+        while (index != -1) {
+            add(index to (index + word.length))
+            index = text.indexOf(word, index + word.length, ignoreCase = true)
+        }
+    }
+}
+
+@Composable
+fun rememberDateTimeFormatter(): DateFormat {
+    return remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT) }
+}
+
+@Composable
+fun rememberCustomTabsIntent(): CustomTabsIntent {
+    return remember {
+        CustomTabsIntent.Builder()
+            .setShowTitle(true)
+            .build()
+    }
+}
+
+fun Int.toHexColor(): String {
+    return String.format("#%06X", 0xFFFFFF and this)
+}
+
+fun IntRange.overlaps(other: IntRange): Boolean {
+    return this.first <= other.last && other.first <= this.last
+}

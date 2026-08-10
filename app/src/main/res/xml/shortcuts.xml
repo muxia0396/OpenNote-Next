@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="new_file"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_new_file"
+        android:shortcutShortLabel="@string/shortcut_new_file"
+        android:shortcutLongLabel="@string/shortcut_new_file">
+        <intent
+            android:action="android.intent.action.CREATE_NOTE"
+            android:targetPackage="com.muxia0396.opennotenext"
+            android:targetClass="com.yangdai.opennote.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="import_file"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_import_file"
+        android:shortcutShortLabel="@string/shortcut_import_file"
+        android:shortcutLongLabel="@string/shortcut_import_file">
+        <intent
+            android:action="com.muxia0396.opennotenext.action.IMPORT_FILE"
+            android:targetPackage="com.muxia0396.opennotenext"
+            android:targetClass="com.yangdai.opennote.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="import_folder"
+        android:enabled="true"
+        android:icon="@drawable/ic_shortcut_import_folder"
+        android:shortcutShortLabel="@string/shortcut_import_folder"
+        android:shortcutLongLabel="@string/shortcut_import_folder">
+        <intent
+            android:action="com.muxia0396.opennotenext.action.IMPORT_FOLDER"
+            android:targetPackage="com.muxia0396.opennotenext"
+            android:targetClass="com.yangdai.opennote.MainActivity" />
+    </shortcut>
+</shortcuts>
