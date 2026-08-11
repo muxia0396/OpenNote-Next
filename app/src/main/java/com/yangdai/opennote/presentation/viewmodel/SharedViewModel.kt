@@ -908,32 +908,28 @@ class SharedViewModel @Inject constructor(
                     .takeIf { it >= 0 && !cursor.isNull(it) }
                     ?.let(cursor::getString)
 
-                listOf(
-                    "date_created",
-                    "creation_time",
-                    "created_at",
-                    "created",
-                    "ctime",
-                    "date_added"
-                ).firstNotNullOfOrNull { columnName ->
+                SourceCreationTimeResolver.trustedProviderColumns.firstNotNullOfOrNull { columnName ->
                     val index = cursor.getColumnIndex(columnName)
                     if (index < 0 || cursor.isNull(index)) null
-                    else normalizeProviderTimestamp(cursor.getLong(index))
+                    else SourceCreationTimeResolver.normalizeProviderTimestamp(cursor.getLong(index))
                 }
             }
         }.getOrNull()
-        if (providerCreatedAt != null) return providerCreatedAt
 
+        // text/plain is often routed through MediaStore, whose date_added value is the
+        // database indexing time rather than the file creation time. Resolve the backing
+        // file or descriptor first so every supported format follows the same path as MD.
         providerPath?.let { path ->
             readFileCreationTime(path)?.let { return it }
         }
-        return runCatching {
+        val descriptorCreatedAt = runCatching {
             context.contentResolver.openFileDescriptor(uri, "r")?.use { descriptor ->
                 Os.fstat(descriptor.fileDescriptor).st_ctime
                     .takeIf { it > 0L }
                     ?.times(1_000L)
             }
         }.getOrNull()
+        return descriptorCreatedAt ?: providerCreatedAt
     }
 
     private suspend fun refreshImportedNoteCreationTimes() = withContext(Dispatchers.IO) {
@@ -970,12 +966,6 @@ class SharedViewModel @Inject constructor(
             .toMillis()
             .takeIf { it > 0L }
     }.getOrNull()
-
-    private fun normalizeProviderTimestamp(value: Long): Long? = when {
-        value <= 0L -> null
-        value < 10_000_000_000L -> value * 1_000L
-        else -> value
-    }
 
     private fun isReadableDocument(file: DocumentFile): Boolean {
         if (!file.isFile || !file.canRead()) return false
