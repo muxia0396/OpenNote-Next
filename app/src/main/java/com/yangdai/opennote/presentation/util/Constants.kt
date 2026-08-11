@@ -18,6 +18,7 @@ object Constants {
 
     object Preferences {
         const val SEARCH_HISTORY = "SEARCH_HISTORY"
+        const val NOTE_ORDER = "NOTE_ORDER"
         const val APP_THEME = "APP_THEME"
         const val APP_COLOR = "APP_COLOR"
         const val PASSWORD = "PASSWORD"

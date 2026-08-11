@@ -17,8 +17,8 @@ android {
         applicationId = "com.muxia0396.opennotenext"
         minSdk = 29
         targetSdk = 36
-        versionCode = 2007
-        versionName = "2.0.7"
+        versionCode = 2008
+        versionName = "2.0.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

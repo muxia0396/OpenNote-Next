@@ -148,9 +148,13 @@ class SharedViewModel @Inject constructor(
     val isLoading: StateFlow<Boolean>
         field = MutableStateFlow(true)
 
+    private val initialNoteOrder = NoteOrder.fromPreferenceValue(
+        appDataStoreRepository.getStringValue(Constants.Preferences.NOTE_ORDER, "")
+    )
+
     // 主屏幕展示的笔记列表状态, 包含笔记列表、排序方式
     val mainScreenDataStateFlow: StateFlow<DataState>
-        field = MutableStateFlow(DataState())
+        field = MutableStateFlow(DataState(noteOrder = initialNoteOrder))
 
     // 文件夹和文件夹内笔记数量为一个Pair的列表
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -278,7 +282,7 @@ class SharedViewModel @Inject constructor(
             //任务完成后将 isLoading 设置为 false 以隐藏启动屏幕
             isLoading.value = false
         }
-        getNotes()
+        getNotes(initialNoteOrder)
     }
 
     val settingsStateFlow: StateFlow<SettingsState> = combine<Any, SettingsState>(
@@ -363,9 +367,10 @@ class SharedViewModel @Inject constructor(
     fun onListEvent(event: ListEvent) {
         when (event) {
 
-            is ListEvent.Sort -> getNotes(
-                event.noteOrder, event.trash, event.filterFolder, event.folderId
-            )
+            is ListEvent.Sort -> {
+                persistNoteOrder(event.noteOrder)
+                getNotes(event.noteOrder, event.trash, event.filterFolder, event.folderId)
+            }
 
             is ListEvent.DeleteNotes -> {
                 viewModelScope.launch(Dispatchers.IO) {
@@ -484,6 +489,15 @@ class SharedViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    private fun persistNoteOrder(noteOrder: NoteOrder) {
+        viewModelScope.launch(Dispatchers.IO) {
+            appDataStoreRepository.putString(
+                Constants.Preferences.NOTE_ORDER,
+                noteOrder.toPreferenceValue()
+            )
         }
     }
 
